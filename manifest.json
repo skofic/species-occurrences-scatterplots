@@ -1,0 +1,16 @@
+{
+    "name": "species-occurrences-scatterplots",
+    "version": "0.0.0",
+    "description": "A service to get scatterplot data for indicator pairs",
+    "engines": {
+        "arangodb": "^3.0.0"
+    },
+    "author": "Milko Skofic",
+    "license": "Apache 2",
+    "main": "main.js",
+    "scripts": {
+        "setup": "scripts/setup.js",
+        "teardown": "scripts/teardown.js"
+    },
+    "tests": "test/**/*.js"
+}
