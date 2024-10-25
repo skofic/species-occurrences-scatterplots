@@ -173,6 +173,226 @@ module.exports = Object.freeze({
 	}, // Domains.
 	
 	///
+	// Indicators.
+	///
+	indicators: [
+		"env_climate_pr",
+		"env_climate_tas",
+		"env_climate_bio01",
+		"env_climate_bio04",
+		"env_climate_bio05",
+		"env_climate_bio06",
+		"env_climate_bio12",
+		"env_climate_bio14",
+		"env_climate_bio15",
+		"env_climate_vpd_mean"
+	],
+	
+	///
+	// Base collections.
+	///
+	collections: {
+		default: {
+			document: {
+				Stats: []
+			},
+			edge: {}
+		},
+		base: {
+			Chelsa: [
+				{
+					name: "idx_geometry",
+					type: "geo",
+					geoJson: true,
+					fields: ["geometry_bounds"],
+					sparse: true,
+					unique: false
+				}
+			],
+			EUFGIS_Chelsa: [
+				{
+					name: "idx_gcu_id_number",
+					type: "persistent",
+					fields: ["properties.gcu_id_number_list[*]"],
+					estimates: true,
+					cacheEnabled: false,
+					deduplicate: false,
+					sparse: false,
+					unique: false
+				},
+				{
+					name: "idx_gcu_id_unit-id",
+					type: "persistent",
+					fields: ["properties.`gcu_id_unit-id_list`[*]"],
+					estimates: true,
+					cacheEnabled: false,
+					deduplicate: false,
+					sparse: false,
+					unique: false
+				}
+			],
+			"EU-Forest_Chelsa": [
+				{
+					name: "idx_species_list",
+					type: "persistent",
+					fields: ["properties.species_list[*]"],
+					estimates: true,
+					cacheEnabled: false,
+					deduplicate: false,
+					sparse: false,
+					unique: false
+				}
+			]
+		},
+		work: {
+			Shapes: [
+				{
+					name: "idx_geometry",
+					type: "geo",
+					geoJson: true,
+					fields: ["geometry"],
+					sparse: true,
+					unique: false
+				}
+			],
+			UnitShapes: [
+				{
+					name: "idx_geometry_hash",
+					type: "persistent",
+					fields: ["geometry_hash"],
+					estimates: true,
+					cacheEnabled: false,
+					deduplicate: false,
+					sparse: false,
+					unique: false
+				},
+				{
+					name: "idx_gcu_id_number",
+					type: "persistent",
+					fields: ["properties.gcu_id_number_list[*]"],
+					estimates: true,
+					cacheEnabled: false,
+					deduplicate: false,
+					sparse: false,
+					unique: false
+				},
+				{
+					name: "idx_gcu_id_unit-id",
+					type: "persistent",
+					fields: ["properties.`gcu_id_unit-id_list`[*]"],
+					estimates: true,
+					cacheEnabled: false,
+					deduplicate: false,
+					sparse: false,
+					unique: false
+				}
+			],
+			"EU-Forest_Genus": [
+				{
+					name: "idx_geometry",
+					type: "geo",
+					geoJson: true,
+					fields: ["geometry"],
+					sparse: true,
+					unique: false
+				},
+				{
+					name: "idx_genus",
+					type: "persistent",
+					fields: ["properties.genus"],
+					estimates: true,
+					cacheEnabled: false,
+					deduplicate: false,
+					sparse: false,
+					unique: false
+				}
+			],
+			"EU-Forest_Species": [
+				{
+					name: "idx_geometry",
+					type: "geo",
+					geoJson: true,
+					fields: ["geometry"],
+					sparse: true,
+					unique: false
+				},
+				{
+					name: "idx_species",
+					type: "persistent",
+					fields: ["properties.species"],
+					estimates: true,
+					cacheEnabled: false,
+					deduplicate: false,
+					sparse: false,
+					unique: false
+				}
+			],
+			"EU-Forest_Occurrences": [
+				{
+					name: "idx_geometry",
+					type: "geo",
+					geoJson: true,
+					fields: ["geometry"],
+					sparse: true,
+					unique: false
+				},
+				{
+					name: "idx_species_list",
+					type: "persistent",
+					fields: ["properties.species_list[*]"],
+					estimates: true,
+					cacheEnabled: false,
+					deduplicate: false,
+					sparse: false,
+					unique: false
+				}
+			],
+			"EU-Forest_Work": [
+				{
+					name: "idx_geometry",
+					type: "geo",
+					geoJson: true,
+					fields: ["geometry"],
+					sparse: true,
+					unique: false
+				},
+				{
+					name: "idx_geometry_hash",
+					type: "persistent",
+					fields: ["geometry_hash"],
+					estimates: true,
+					cacheEnabled: false,
+					deduplicate: false,
+					sparse: false,
+					unique: false
+				},
+				{
+					name: "idx_species_list",
+					type: "persistent",
+					fields: ["properties.species_list[*]"],
+					estimates: true,
+					cacheEnabled: false,
+					deduplicate: false,
+					sparse: false,
+					unique: false
+				}
+			],
+			EUFGIS_Work: [
+				{
+					name: "idx_geometry_hash",
+					type: "persistent",
+					fields: ["geometry_hash"],
+					estimates: true,
+					cacheEnabled: false,
+					deduplicate: false,
+					sparse: false,
+					unique: false
+				}
+			]
+		}
+	},
+	
+	///
 	// Indicator pairs.
 	///
 	pairs: {

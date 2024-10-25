@@ -23,11 +23,8 @@ const results = {
 ///
 // Collection names.
 ///
-const documentCollections = [
-  "Stats"
-]
-const edgeCollections = [
-]
+const documentCollections = Object.keys(K.collections.default.document)
+const edgeCollections = Object.keys(K.collections.default.edge)
 
 ///
 // Handle document collections.

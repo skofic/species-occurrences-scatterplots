@@ -23,13 +23,15 @@ const results = {
 
 
 ///
-// Collection names.
+// Handle arguments.
 ///
-const documentCollections = [
-	"Stats"
-]
-const edgeCollections = [
-]
+const { argv } = module.context
+
+///
+// Default collections.
+///
+const documentCollections = Object.keys(K.collections.default.document)
+const edgeCollections = Object.keys(K.collections.default.edge)
 
 ///
 // Handle document collections.
@@ -96,46 +98,27 @@ for (const pair of K.pairs.list)
 						console.debug(`Document collection ${name} already exists. Leaving it untouched.`)
 					}
 				}
-
+				
 				///
-				// Reference collection.
+				// Save collection and collect existing indexes.
 				///
 				const collection = db._collection(name)
+				const index_names = collection.getIndexes().map(index => index.name)
 
 				///
 				// Create general indexes.
 				///
 				for (const field of K.domains[domain].types[type].indexes.fields) {
-					results.indexes.push(`idx_${field.name}`)
-					if (context.isProduction) {
-						console.debug(`Ensuring index idx_${field.name} for collection ${name}.`)
-					}
-					collection.ensureIndex({
-						name: `idx_${field.name}`,
-						type: "persistent",
-						fields: field.fields,
-						estimates: true,
-						cacheEnabled: false,
-						deduplicate: false,
-						sparse: false,
-						unique: false
-					})
-				}
-
-				///
-				// Create indicator indexes.
-				///
-				if(K.domains[domain].types[type].indexes.indicators)
-				{
-					for (const axis of ['X', 'Y']) {
-						results.indexes.push(`idx_${K.pairs[pair][axis].term}`)
+					const index_name = `idx_${field.name}`
+					if(!index_names.includes(index_name)) {
+						results.indexes.push(`${name}.${index_name}`)
 						if (context.isProduction) {
-							console.debug(`Ensuring index idx_${K.pairs[pair][axis].term} for collection ${name}.`)
+							console.debug(`Ensuring index ${index_name} for collection ${name}.`)
 						}
 						collection.ensureIndex({
-							name: `idx_${K.pairs[pair][axis].term}`,
+							name: index_name,
 							type: "persistent",
-							fields: [K.pairs[pair][axis].term],
+							fields: field.fields,
 							estimates: true,
 							cacheEnabled: false,
 							deduplicate: false,
@@ -144,9 +127,156 @@ for (const pair of K.pairs.list)
 						})
 					}
 				}
+
+				///
+				// Create indicator indexes.
+				///
+				if(K.domains[domain].types[type].indexes.indicators)
+				{
+					for (const axis of ['X', 'Y']) {
+						const index_name = `idx_${K.pairs[pair][axis].term}`
+						if(!index_names.includes(index_name)) {
+							results.indexes.push(`${name}.${index_name}`)
+							if (context.isProduction) {
+								console.debug(`Ensuring index ${index_name} for collection ${name}.`)
+							}
+							collection.ensureIndex({
+								name: index_name,
+								type: "persistent",
+								fields: [K.pairs[pair][axis].term],
+								estimates: true,
+								cacheEnabled: false,
+								deduplicate: false,
+								sparse: false,
+								unique: false
+							})
+						}
+					}
+				}
 			}
 		}
 	}
 }
+
+///
+// Handle base collections.
+///
+if(argv.length > 0)
+{
+	///
+	// Parse argument.
+	///
+	switch(argv[0])
+	{
+		case 'all':
+			
+			///
+			// Iterate base collections.
+			///
+			for (const [name, indexes] of Object.entries(K.collections.base))
+			{
+				///
+				// Create collection.
+				///
+				if(!db._collection(name)) {
+					console.debug(`Creating base collection ${name}.`)
+					db._createDocumentCollection(name)
+					results.created.push(name)
+				} else {
+					results.existing.push(name)
+					if(context.isProduction) {
+						console.debug(`Base collection ${name} already exists. Leaving it untouched.`)
+					}
+				}
+
+				///
+				// Save collection and collect existing indexes.
+				///
+				const collection = db._collection(name)
+				const index_names = collection.getIndexes().map(index => index.name)
+				
+				///
+				// Create indexes.
+				///
+				for (const index of indexes) {
+					const idx_name = index.name
+					if(!index_names.includes(idx_name)) {
+						collection.ensureIndex(index)
+						results.indexes.push(`${name}.${idx_name}`)
+						if (context.isProduction) {
+							console.debug(`Ensuring index idx_${idx_name} for collection ${name}.`)
+						}
+					}
+				}
+				
+				///
+				// Create indicator indexes.
+				///
+				for (const indicator of K.indicators) {
+					const idx_name = `idx_${indicator}`
+					if(!index_names.includes(idx_name)) {
+						collection.ensureIndex({
+							name: idx_name,
+							type: "persistent",
+							fields: [indicator],
+							estimates: true,
+							cacheEnabled: false,
+							deduplicate: false,
+							sparse: false,
+							unique: false
+						})
+						results.indexes.push(`${name}.${index_name}`)
+						if (context.isProduction) {
+							console.debug(`Ensuring index idx_${idx_name} for collection ${name}.`)
+						}
+					}
+				}
+			}
+			
+			///
+			// Iterate work collections.
+			///
+			for (const [name, indexes] of Object.entries(K.collections.work))
+			{
+				///
+				// Create collection.
+				///
+				if(!db._collection(name)) {
+					console.debug(`Creating work collection ${name}.`)
+					db._createDocumentCollection(name)
+					results.created.push(name)
+				} else {
+					results.existing.push(name)
+					if(context.isProduction) {
+						console.debug(`Work collection ${name} already exists. Leaving it untouched.`)
+					}
+				}
+				
+				///
+				// Save collection and collect existing indexes.
+				///
+				const collection = db._collection(name)
+				const index_names = collection.getIndexes().map(index => index.name)
+				
+				///
+				// Create indexes.
+				///
+				for (const index of indexes) {
+					const idx_name = index.name
+					if(!index_names.includes(idx_name)) {
+						collection.ensureIndex(index)
+						results.indexes.push(idx_name)
+						if (context.isProduction) {
+							console.debug(`Ensuring index idx_${idx_name} for collection ${name}.`)
+						}
+					}
+				}
+			}
+			
+			break
+		
+	} // Parsing arguments.
+	
+} // Provided argument.
 
 module.exports = results
