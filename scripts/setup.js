@@ -109,14 +109,14 @@ for (const pair of K.pairs.list)
 				// Create general indexes.
 				///
 				for (const field of K.domains[domain].types[type].indexes.fields) {
-					const index_name = `idx_${field.name}`
-					if(!index_names.includes(index_name)) {
-						results.indexes.push(`${name}.${index_name}`)
+					const idx_name = `idx_${field.name}`
+					if(!index_names.includes(idx_name)) {
+						results.indexes.push(`${name}.${idx_name}`)
 						if (context.isProduction) {
-							console.debug(`Ensuring index ${index_name} for collection ${name}.`)
+							console.debug(`Ensuring index ${idx_name} for collection ${name}.`)
 						}
 						collection.ensureIndex({
-							name: index_name,
+							name: idx_name,
 							type: "persistent",
 							fields: field.fields,
 							estimates: true,
@@ -134,16 +134,17 @@ for (const pair of K.pairs.list)
 				if(K.domains[domain].types[type].indexes.indicators)
 				{
 					for (const axis of ['X', 'Y']) {
-						const index_name = `idx_${K.pairs[pair][axis].term}`
-						if(!index_names.includes(index_name)) {
-							results.indexes.push(`${name}.${index_name}`)
+						const idx_name = `idx_${K.pairs[pair][axis].term}`
+						const idx_field = `properties.${K.pairs[pair][axis].term}`
+						if(!index_names.includes(idx_name)) {
+							results.indexes.push(`${name}.${idx_name}`)
 							if (context.isProduction) {
-								console.debug(`Ensuring index ${index_name} for collection ${name}.`)
+								console.debug(`Ensuring index ${idx_name} for collection ${name}.`)
 							}
 							collection.ensureIndex({
-								name: index_name,
+								name: idx_name,
 								type: "persistent",
-								fields: [K.pairs[pair][axis].term],
+								fields: [idx_field],
 								estimates: true,
 								cacheEnabled: false,
 								deduplicate: false,
@@ -225,7 +226,7 @@ if(argv.length > 0)
 							sparse: false,
 							unique: false
 						})
-						results.indexes.push(`${name}.${index_name}`)
+						results.indexes.push(`${name}.${idx_name}`)
 						if (context.isProduction) {
 							console.debug(`Ensuring index idx_${idx_name} for collection ${name}.`)
 						}
@@ -265,7 +266,7 @@ if(argv.length > 0)
 					const idx_name = index.name
 					if(!index_names.includes(idx_name)) {
 						collection.ensureIndex(index)
-						results.indexes.push(idx_name)
+						results.indexes.push(`${name}.${idx_name}`)
 						if (context.isProduction) {
 							console.debug(`Ensuring index idx_${idx_name} for collection ${name}.`)
 						}
