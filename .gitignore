@@ -5,6 +5,9 @@
 # Credential files.
 credentials.localhost.js
 
+# Data directory
+data/
+
 ###
 # NODE.JS
 ###
