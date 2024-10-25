@@ -1,4 +1,5 @@
-'use strict';
-const { context } = require('@arangodb/locals');
+'use strict'
 
-context.use('/prova', require('./routes/prova'), 'prova');
+const { context } = require('@arangodb/locals')
+
+context.use('/info', require('./routes/info'), 'info')
