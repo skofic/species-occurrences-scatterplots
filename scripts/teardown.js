@@ -1,7 +1,10 @@
 'use strict';
 const { db } = require('@arangodb');
 const { context } = require('@arangodb/locals');
-const collections = [];
+const collections = [
+  "prova",
+  "angolo"
+];
 
 for (const localName of collections) {
   const qualifiedName = context.collectionName(localName);
