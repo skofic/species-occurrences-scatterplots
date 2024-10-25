@@ -215,11 +215,14 @@ if(argv.length > 0)
 				///
 				for (const indicator of K.indicators) {
 					const idx_name = `idx_${indicator}`
+					const idx_field = (name === "Chelsa")
+						? `properties.\`1981-2010\`.${indicator}`
+						: `properties.${indicator}`
 					if(!index_names.includes(idx_name)) {
 						collection.ensureIndex({
 							name: idx_name,
 							type: "persistent",
-							fields: [indicator],
+							fields: [idx_field],
 							estimates: true,
 							cacheEnabled: false,
 							deduplicate: false,
