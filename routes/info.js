@@ -2,8 +2,9 @@
 
 const joi = require('joi')
 const dd = require('dedent')
-const httpError = require('http-errors')
 const status = require('statuses')
+const {db, aql} = require('@arangodb')
+const httpError = require('http-errors')
 const { errors } = require('@arangodb')
 const { context } = require('@arangodb/locals')
 const createRouter = require('@arangodb/foxx/router')
@@ -20,10 +21,13 @@ const HTTP_CONFLICT = status('conflict')
 ///
 // Models.
 ///
-const ModelCollectionNames = require('../models/CollectionNamesList')
 const ModelPairParameter = require('../models/CollectionPairKeyParameter')
 const ModelTypeParameter = require('../models/CollectionTypeParameter')
 const ModelDomainParameter = require('../models/CollectionDomainParameter')
+const ModelStatisticsParameter = require('../models/StatisticsParameter')
+const ModelSpeciesNames = require('../models/SpeciesNamesList')
+const ModelsPairsInfos = require('../models/PairInfos')
+const ModelStatistics = require('../models/Statistics')
 
 ///
 // Global includes.
@@ -48,39 +52,69 @@ router.tag('info')
  */
 
 /**
- * Return collection names.
+ * Return statistics.
  */
 router
 	.get(
+		'/stats',
 		function (request, response) {
-			response.send(getPairCollectionNames(request, response))
+			response.send(getStats(request, response))
 		},
-		'list'
+		'stats'
+	)
+	.summary('Get statistics')
+	.description(dd`
+		Get statistics on indicator values and domains.
+	`)
+	
+	.queryParam('domain', ModelStatisticsParameter)
+	
+	.response(ModelStatistics)
+
+/**
+ * Return pairs infos.
+ */
+router
+	.get(
+		'/pairs',
+		function (request, response) {
+			response.send(getPairInfos(request, response))
+		},
+		'pairs'
 	)
 	.summary('Get pair collection names')
 	.description(dd`
-		Get list of collection names according to provided pair key, domain and type.
+		Get pair information according to provided pair key, domain and type.
 	`)
 	
 	.queryParam('pair', ModelPairParameter)
 	.queryParam('type', ModelTypeParameter)
 	.queryParam('domain', ModelDomainParameter)
 	
-	.response(ModelCollectionNames)
+	.response(ModelsPairsInfos)
 
 /**
  * FUNCTIONS
  */
 
 /**
- * Return list of pair collection names.
+ * Return statistics.
  */
-function getPairCollectionNames(theRequest, theResponse)
+function getStats(theRequest, theResponse)
 {
-	return helpers.getPairCollectionNames(
-		theRequest.queryParams.pair,
-		theRequest.queryParams.domain,
-		theRequest.queryParams.type
+	return helpers.getStats(
+		theRequest.queryParams.domain
 	)                                                                   // ==>
 	
-} // getPairCollectionNames()
+} // getStats()
+
+/**
+ * Return list of pair information records.
+ */
+function getPairInfos(theRequest, theResponse)
+{
+	return helpers.getPairInfos(
+		theRequest.queryParams.pair
+	)                                                                   // ==>
+	
+} // getPairInfos()
