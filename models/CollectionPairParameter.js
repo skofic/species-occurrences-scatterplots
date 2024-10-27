@@ -6,7 +6,7 @@ const dd = require('dedent')
 const K = require("../globals.js")
 
 /**
- * CollectionPairKeyParameter.js
+ * CollectionPairParameter.js
  *
  * Model for pair key.
  */

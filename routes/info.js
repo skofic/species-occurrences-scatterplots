@@ -21,7 +21,7 @@ const HTTP_CONFLICT = status('conflict')
 ///
 // Models.
 ///
-const ModelPairParameter = require('../models/CollectionPairKeyParameter')
+const ModelPairParameter = require('../models/CollectionPairParameter')
 const ModelTypeParameter = require('../models/CollectionTypeParameter')
 const ModelDomainParameter = require('../models/CollectionDomainParameter')
 const ModelStatisticsParameter = require('../models/StatisticsParameter')

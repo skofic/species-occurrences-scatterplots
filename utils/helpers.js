@@ -106,7 +106,7 @@ function getStats(theDomain = "all")
 } // getStats()
 
 /**
- * getPairCollectionNames
+ * getPairInfos
  *
  * This function will return a list of pair information records according to the
  * provided parameters.
@@ -218,6 +218,91 @@ function getPairInfos(thePair = "all", theDomain = "all", theType = "all")
 } // getPairInfos()
 
 /**
+ * getGridData
+ *
+ * This function will return a list of pair information records according to the
+ * provided parameters.
+ *
+ * @param thePair {String}: Pair key.
+ * @param theType {String}: Which resolution.
+ * @param theStart {Number}: Records start.
+ * @param theLimit {Number}: Records count.
+ * @param doCount {Boolean}: Include count in results.
+ *
+ * @return {Object}: Grid level records.
+ */
+function getGridData(
+	thePair,
+	theType,
+	theStart,
+	theLimit,
+	doCount
+) {
+	///
+	// Init local storage.
+	///
+	const params = {}
+	
+	///
+	// Handle pair.
+	///
+	if(K.pairs.list.includes(thePair)) {
+		params['pair'] = thePair
+	} else {
+		throw new Error(`Requested a non existing pair key: ${thePair}.`)
+	}
+	
+	///
+	// Handle type.
+	///
+	if(K.types.list.includes(theType)) {
+		params['type'] = theType
+	} else {
+		throw new Error(`Requested a non existing type key: ${theType}.`)
+	}
+	
+	///
+	// Handle limits.
+	///
+	params['start'] = theStart
+	params['limit'] = theLimit
+	
+	///
+	// Get indicators and collection.
+	///
+	const X = K.pairs[params.pair].X.term
+	const Y = K.pairs[params.pair].Y.term
+	const collection = db._collection(`${params.pair}_chelsa_${params.type}`)
+	
+	///
+	// Make query.
+	///
+	const query = doCount
+		?
+			aql`
+				FOR doc IN ${collection}
+				  LIMIT ${params.start}, ${params.limit}
+				RETURN {
+				  count: doc.count,
+				  ${X}: doc.properties[${X}],
+				  ${Y}: doc.properties[${Y}]
+				}
+			`
+		:
+			aql`
+				FOR doc IN ${collection}
+				  LIMIT ${params.start}, ${params.limit}
+				RETURN {
+				  ${X}: doc.properties[${X}],
+				  ${Y}: doc.properties[${Y}]
+				}
+			`
+	
+	return db._query(query).toArray()                                   // ==>
+	
+} // getGridData()
+
+/**
  * getPairCollectionNames
  *
  * This function will return a list of pair collection names according to the
@@ -291,6 +376,7 @@ function getPairCollectionNames(thePair = "all", theDomain = "all", theType = "a
 module.exports = {
 	getStats,
 	getPairInfos,
+	getGridData,
 	
 	getPairCollectionNames
 }
