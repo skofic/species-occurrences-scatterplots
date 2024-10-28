@@ -4,7 +4,7 @@ const joi = require('joi')
 const dd = require('dedent')
 
 /**
- * SpeciesData.js
+ * UnitsData.js
  *
  * Model for species data.
  */
@@ -12,7 +12,8 @@ const dd = require('dedent')
 // Schema for the object format
 const objectSchema = joi.object({
 	count: joi.number().optional(),
-	species_list: joi.array().items(joi.string()).optional()
+	gcu_id_number_list: joi.array().items(joi.string()).optional(),
+	'gcu_id_unit-id_list': joi.array().items(joi.string()).optional()
 	// Using joi.number() for any two additional numeric properties
 }).pattern(joi.string(), joi.number()).length(4);
 
@@ -30,12 +31,13 @@ module.exports = joi
 	)
 	.required()
 	.description(dd`
-Species data.
-This is the structure of the scatter-plot data of the species layer, the \
-layer above the grid layer. The structure is as follows:
+Unit data.
+This is the structure of the scatter-plot data of the units layer, the \
+top layer above the species layer. The structure is as follows:
 
 - \`count\`: The number of grid elements that feature the current pair of values.
-- \`species_list\`: The list of observed species that feature the current pair of values.
+- \`gcu_id_number_list\`: The list of unit numbers featured by the current pair of values.
+- \`gcu_id_unit-id_list\`: The list of unit Ids featured by the current pair of values.
 - \`[X]\`: The value of the X-axis indicator, the property name will be the variable name.
 - \`[Y]\`: The value of the Y-axis indicator, the property name will be the variable name.
 

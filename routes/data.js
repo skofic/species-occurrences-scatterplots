@@ -29,8 +29,12 @@ const ModelCountParameter = require('../models/IncludeCountParameter')
 const ModelUseWeightOrCount = require('../models/CountTypeParameter')
 const ModelSpeciesParameter = require('../models/IncludeSpeciesList')
 const ModelSpeciesList = require('../models/SpeciesNamesList')
+const ModelUnitIdParameter = require('../models/IncludeUnitId')
+const ModelUnitNumberParameter = require('../models/IncludeUnitNumber')
+const ModelUnitIdentifiersList = require('../models/UnitLists')
 const ModelResultFormat = require('../models/ResultFormatParameter')
 const ModelSpeciesData = require('../models/SpeciesData')
+const ModelUnitsData = require('../models/UnitsData')
 const ModelGridData = require('../models/GridData')
 
 ///
@@ -56,7 +60,7 @@ router.tag('data')
  */
 
 /**
- * Chelsa data.
+ * Grid data.
  */
 router
 	.get(
@@ -92,7 +96,7 @@ records range.
 	.response(ModelGridData)
 
 /**
- * EU-Forest data.
+ * Species data.
  */
 router
 	.post(
@@ -131,11 +135,51 @@ records range.
 	.response(ModelSpeciesData)
 
 /**
+ * Units data.
+ */
+router
+	.post(
+		'/units',
+		function (request, response) {
+			response.send(getUnits(request, response))
+		},
+		'units'
+	)
+	.summary('Get units data')
+	.description(dd`
+**Get unit pair data**.
+
+Units data represents the conservation units where the climate matches the \
+pair of indicators. This layer is above the species layer and shows the \
+distribution of conservation units in the region of interest.
+
+Provide the pair key, to select the pair of indicators, and the type, \
+to select either the full resolution or rounded data for the grid. \
+There are a set of flags that determine what data is returned and in \
+what format. Provide the start and limit parameters to select the \
+records range.
+	`)
+	
+	.queryParam('pair', ModelPairParameter)
+	.queryParam('type', ModelTypeParameter)
+	.queryParam('count', ModelCountParameter)
+	.queryParam('id', ModelUnitIdParameter)
+	.queryParam('number', ModelUnitNumberParameter)
+	.queryParam('weight', ModelUseWeightOrCount)
+	.queryParam('format', ModelResultFormat)
+	.queryParam('start', ModelStartParameter)
+	.queryParam('limit', ModelLimitParameter)
+	
+	.body(ModelUnitIdentifiersList)
+	
+	.response(ModelUnitsData)
+
+/**
  * FUNCTIONS
  */
 
 /**
- * Return statistics.
+ * Return grid data.
  */
 function getGrid(theRequest, theResponse)
 {
@@ -152,7 +196,7 @@ function getGrid(theRequest, theResponse)
 } // getGrid()
 
 /**
- * Return statistics.
+ * Return species data.
  */
 function getSpecies(theRequest, theResponse)
 {
@@ -160,8 +204,28 @@ function getSpecies(theRequest, theResponse)
 		theRequest.queryParams.pair,
 		theRequest.queryParams.type,
 		theRequest.body,
-		theRequest.queryParams.species,
 		theRequest.queryParams.count,
+		theRequest.queryParams.species,
+		theRequest.queryParams.weight,
+		theRequest.queryParams.format,
+		theRequest.queryParams.start,
+		theRequest.queryParams.limit
+	)                                                                   // ==>
+	
+} // getSpecies()
+
+/**
+ * Return unit data.
+ */
+function getUnits(theRequest, theResponse)
+{
+	return helpers.getSpeciesData(
+		theRequest.queryParams.pair,
+		theRequest.queryParams.type,
+		theRequest.body,
+		theRequest.queryParams.count,
+		theRequest.queryParams.id,
+		theRequest.queryParams.number,
 		theRequest.queryParams.weight,
 		theRequest.queryParams.format,
 		theRequest.queryParams.start,

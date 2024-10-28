@@ -220,8 +220,8 @@ function getPairInfos(thePair = "all", theDomain = "all", theType = "all")
 /**
  * getGridData
  *
- * This function will return a list of pair information records according to the
- * provided parameters.
+ * This function will return a list of pair data records associated with the
+ * climate grid layer.
  *
  * @param thePair {String}: Pair key.
  * @param theType {String}: Which resolution.
@@ -280,102 +280,83 @@ function getGridData(
 	const collection = db._collection(name)
 	
 	///
+	// Init query components.
+	///
+	let query_count = aql``
+	let query_vars = aql``
+	
+	///
 	// Handle count.
 	///
-	let query = aql``
-	if(doCount)
-	{
-		switch(theCountType)
-		{
+	if(doCount) {
+		switch(theCountType) {
 			case 'weight':
 				const stats = db._collection('Stats').document(name)
-				switch(theFormat)
-				{
+				switch(theFormat) {
 					case 'json':
-						query = aql`
-							FOR doc IN ${collection}
-							  LIMIT ${params.start}, ${params.limit}
-							RETURN {
-							  count: doc.count / ${stats.items.maxWeight},
-							  ${X}: doc.properties[${X}],
-							  ${Y}: doc.properties[${Y}]
-							}
-						`
+						query_count = aql`count: doc.count / ${stats.items.maxWeight},`
 						break
-					
 					case 'array':
-						query = aql`
-							FOR doc IN ${collection}
-							  LIMIT ${params.start}, ${params.limit}
-							RETURN [
-							  doc.count / ${stats.items.maxWeight},
-							  doc.properties[${X}],
-							  doc.properties[${Y}]
-							]
-						`
+						query_count = aql`doc.count / ${stats.items.maxWeight},`
 						break
 				}
 				break
-			
 			case 'count':
-				switch(theFormat)
-				{
+				switch(theFormat) {
 					case 'json':
-						query = aql`
-							FOR doc IN ${collection}
-							  LIMIT ${params.start}, ${params.limit}
-							RETURN {
-							  count: doc.count,
-							  ${X}: doc.properties[${X}],
-							  ${Y}: doc.properties[${Y}]
-							}
-						`
+						query_count = aql`count: doc.count,`
 						break
-					
 					case 'array':
-						query = aql`
-							FOR doc IN ${collection}
-							  LIMIT ${params.start}, ${params.limit}
-							RETURN []
-							  doc.count,
-							  doc.properties[${X}],
-							  doc.properties[${Y}]
-							]
-						`
+						query_count = aql`doc.count,`
 						break
 				}
-				break
-			
-			default:
-				throw new Error(`Requested a non existing count type: ${theCountType}.`)
-			
-		} // Handled count type.
-		
-	} else {
-		switch(theFormat)
-		{
-			case 'json':
-				query = aql`
-					FOR doc IN ${collection}
-					  LIMIT ${params.start}, ${params.limit}
-					RETURN {
-					  ${X}: doc.properties[${X}],
-					  ${Y}: doc.properties[${Y}]
-					}
-				`
-				break
-			
-			case 'array':
-				query = aql`
-					FOR doc IN ${collection}
-					  LIMIT ${params.start}, ${params.limit}
-					RETURN [
-					  doc.properties[${X}],
-					  doc.properties[${Y}]
-					]
-				`
 				break
 		}
+	}
+	
+	///
+	// Handle indicators.
+	///
+	switch(theFormat) {
+		case 'json':
+			query_vars = aql`
+				${X}: doc.properties[${X}],
+				${Y}: doc.properties[${Y}]
+			`
+			break
+		case 'array':
+			query_vars = aql`
+				doc.properties[${X}],
+				doc.properties[${Y}]
+			`
+			break
+	}
+	
+	///
+	// Handle query.
+	///
+	let query = aql``
+	switch(theFormat) {
+		case 'json':
+			query = aql`
+				FOR doc IN ${collection}
+				  LIMIT ${params.start}, ${params.limit}
+				RETURN {
+				  ${query_count}
+				  ${query_vars}
+				}
+			`
+			break
+		case 'array':
+			query = aql`
+				FOR doc IN ${collection}
+				  LIMIT ${params.start}, ${params.limit}
+				RETURN [
+				  ${query_count}
+				  ${query_vars}
+				]
+			`
+			break
 	}
 	
 	return db._query(query).toArray()                                   // ==>
@@ -385,14 +366,14 @@ function getGridData(
 /**
  * getSpeciesData
  *
- * This function will return a list of pair information records according to the
- * provided parameters.
+ * This function will return a list of pair data records associated with the
+ * species data layer.
  *
  * @param thePair {String}: Pair key.
  * @param theType {String}: Which resolution.
  * @param theSpecies {String[]}: Requested species list.
- * @param doSpecies {Boolean}: Include species in results.
  * @param doCount {Boolean}: Include count in results.
+ * @param doSpecies {Boolean}: Include species in results.
  * @param theCountType {String}: Weight or record count.
  * @param theFormat {String}: Result format.
  * @param theStart {Number}: Records start.
@@ -404,8 +385,8 @@ function getSpeciesData(
 	thePair,
 	theType,
 	theSpecies,
-	doSpecies,
 	doCount,
+	doSpecies,
 	theCountType,
 	theFormat,
 	theStart,
@@ -447,6 +428,194 @@ function getSpeciesData(
 	const X = K.pairs[params.pair].X.term
 	const Y = K.pairs[params.pair].Y.term
 	const collection = db._collection(name)
+	
+	///
+	// Init query components.
+	///
+	let query_species = aql``
+	let query_count = aql``
+	let query_vars = aql``
+	
+	///
+	// Handle count.
+	///
+	if(doCount) {
+		switch(theCountType) {
+			case 'weight':
+				const stats = db._collection('Stats').document(name)
+				switch(theFormat) {
+					case 'json':
+						query_count = aql`count: doc.count / ${stats.items.maxWeight},`
+						break
+					case 'array':
+						query_count = aql`doc.count / ${stats.items.maxWeight},`
+						break
+				}
+				break
+			case 'count':
+				switch(theFormat) {
+					case 'json':
+						query_count = aql`count: doc.count,`
+						break
+					case 'array':
+						query_count = aql`doc.count,`
+						break
+				}
+				break
+		}
+	}
+	
+	///
+	// Handle species.
+	///
+	if(doSpecies) {
+		switch(theFormat) {
+			case 'json':
+				query_species = aql`species_list: doc.species_list,`
+				break
+		}
+	}
+	
+	///
+	// Handle indicators.
+	///
+	switch(theFormat) {
+		case 'json':
+			query_vars = aql`
+				${X}: doc.properties[${X}],
+				${Y}: doc.properties[${Y}]
+			`
+			break
+		case 'array':
+			query_vars = aql`
+				doc.properties[${X}],
+				doc.properties[${Y}]
+			`
+			break
+	}
+	
+	///
+	// Handle query.
+	///
+	let query = aql``
+	switch(theFormat) {
+		case 'json':
+			query = aql`
+				FOR doc IN ${collection}
+				  FILTER ${theSpecies} ALL IN doc.species_list
+				  LIMIT ${params.start}, ${params.limit}
+				RETURN {
+				  ${query_count}
+				  ${query_species}
+				  ${query_vars}
+				}
+			`
+			break
+		case 'array':
+			query = aql`
+				FOR doc IN ${collection}
+				  FILTER ${theSpecies} ALL IN doc.species_list
+				  LIMIT ${params.start}, ${params.limit}
+				RETURN [
+				  ${query_count}
+				  ${query_species}
+				  ${query_vars}
+				]
+			`
+			break
+	}
+	
+	return db._query(query).toArray()                                   // ==>
+	
+} // getSpeciesData()
+
+/**
+ * getUnitsData
+ *
+ * This function will return a list of pair data records associated with the
+ * units data layer.
+ *
+ * @param thePair {String}: Pair key.
+ * @param theType {String}: Which resolution.
+ * @param theUnits {Object}: Requested units list.
+ * @param doCount {Boolean}: Include count in results.
+ * @param doId {Boolean}: Include unit IDs in results.
+ * @param doNumber {Boolean}: Include unit numbers in results.
+ * @param theCountType {String}: Weight or record count.
+ * @param theFormat {String}: Result format.
+ * @param theStart {Number}: Records start.
+ * @param theLimit {Number}: Records count.
+ *
+ * @return {Object}: Grid level records.
+ */
+function getUnitsData(
+	thePair,
+	theType,
+	theUnits,
+	doCount,
+	doId,
+	doNumber,
+	theCountType,
+	theFormat,
+	theStart,
+	theLimit
+) {
+	///
+	// Init local storage.
+	///
+	const params = {}
+	
+	///
+	// Handle pair.
+	///
+	if(K.pairs.list.includes(thePair)) {
+		params['pair'] = thePair
+	} else {
+		throw new Error(`Requested a non existing pair key: ${thePair}.`)
+	}
+	
+	///
+	// Handle type.
+	///
+	if(K.types.list.includes(theType)) {
+		params['type'] = theType
+	} else {
+		throw new Error(`Requested a non existing type key: ${theType}.`)
+	}
+	
+	///
+	// Handle limits.
+	///
+	params['start'] = theStart
+	params['limit'] = theLimit
+	
+	///
+	// Get indicators and collection.
+	///
+	const name = `${params.pair}_eu_${params.type}`
+	const X = K.pairs[params.pair].X.term
+	const Y = K.pairs[params.pair].Y.term
+	const collection = db._collection(name)
+	
+	///
+	// Get units selection.
+	// TODO: Here, and in the species service, we need to create
+	// query components to be assembled, or it will become a gigantic if-else.
+	///
+	let unit_id_query = aql``
+	let unit_number_query = aql``
+	if(theUnits.hasOwnProperty('gcu_id_number_list')) {
+		if(doId) {
+			if(theUnits['gcu_id_number_list'].length > 0) {
+				unit_id_query = aql`FILTER doc['gcu_id_unit-id_list'] ALL IN ${theUnits['gcu_id_unit-id_list']}`
+			}
+		}
+		if(doNumber) {
+			if(theUnits['gcu_id_unit-id_list'].length > 0) {
+				unit_number_query = aql`FILTER doc['gcu_id_number_list'] ALL IN ${theUnits['gcu_id_number_list']}`
+			}
+		}
+	}
 	
 	///
 	// Handle count.
@@ -642,7 +811,7 @@ function getSpeciesData(
 	
 	return db._query(query).toArray()                                   // ==>
 	
-} // getSpeciesData()
+} // getUnitsData()
 
 /**
  * getPairCollectionNames
@@ -720,6 +889,7 @@ module.exports = {
 	getPairInfos,
 	
 	getGridData,
+	getUnitsData,
 	getSpeciesData,
 	
 	getPairCollectionNames
