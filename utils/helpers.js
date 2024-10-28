@@ -225,22 +225,22 @@ function getPairInfos(thePair = "all", theDomain = "all", theType = "all")
  *
  * @param thePair {String}: Pair key.
  * @param theType {String}: Which resolution.
- * @param theStart {Number}: Records start.
- * @param theLimit {Number}: Records count.
  * @param doCount {Boolean}: Include count in results.
  * @param theCountType {String}: Weight or record count.
  * @param theFormat {String}: Result format.
+ * @param theStart {Number}: Records start.
+ * @param theLimit {Number}: Records count.
  *
  * @return {Object}: Grid level records.
  */
 function getGridData(
 	thePair,
 	theType,
-	theStart,
-	theLimit,
 	doCount,
 	theCountType,
-	theFormat
+	theFormat,
+	theStart,
+	theLimit
 ) {
 	///
 	// Init local storage.
@@ -348,9 +348,9 @@ function getGridData(
 			
 			default:
 				throw new Error(`Requested a non existing count type: ${theCountType}.`)
-		
+			
 		} // Handled count type.
-
+		
 	} else {
 		switch(theFormat)
 		{
@@ -381,6 +381,268 @@ function getGridData(
 	return db._query(query).toArray()                                   // ==>
 	
 } // getGridData()
+
+/**
+ * getSpeciesData
+ *
+ * This function will return a list of pair information records according to the
+ * provided parameters.
+ *
+ * @param thePair {String}: Pair key.
+ * @param theType {String}: Which resolution.
+ * @param theSpecies {String[]}: Requested species list.
+ * @param doSpecies {Boolean}: Include species in results.
+ * @param doCount {Boolean}: Include count in results.
+ * @param theCountType {String}: Weight or record count.
+ * @param theFormat {String}: Result format.
+ * @param theStart {Number}: Records start.
+ * @param theLimit {Number}: Records count.
+ *
+ * @return {Object}: Grid level records.
+ */
+function getSpeciesData(
+	thePair,
+	theType,
+	theSpecies,
+	doSpecies,
+	doCount,
+	theCountType,
+	theFormat,
+	theStart,
+	theLimit
+) {
+	///
+	// Init local storage.
+	///
+	const params = {}
+	
+	///
+	// Handle pair.
+	///
+	if(K.pairs.list.includes(thePair)) {
+		params['pair'] = thePair
+	} else {
+		throw new Error(`Requested a non existing pair key: ${thePair}.`)
+	}
+	
+	///
+	// Handle type.
+	///
+	if(K.types.list.includes(theType)) {
+		params['type'] = theType
+	} else {
+		throw new Error(`Requested a non existing type key: ${theType}.`)
+	}
+	
+	///
+	// Handle limits.
+	///
+	params['start'] = theStart
+	params['limit'] = theLimit
+	
+	///
+	// Get indicators and collection.
+	///
+	const name = `${params.pair}_eu_${params.type}`
+	const X = K.pairs[params.pair].X.term
+	const Y = K.pairs[params.pair].Y.term
+	const collection = db._collection(name)
+	
+	///
+	// Handle count.
+	///
+	let query = aql``
+	if(doCount)
+	{
+		switch(theCountType)
+		{
+			case 'weight':
+				const stats = db._collection('Stats').document(name)
+				switch(theFormat)
+				{
+					case 'json':
+						if(doSpecies) {
+							query = aql`
+								FOR doc IN ${collection}
+								  FILTER ${theSpecies} ALL IN doc.species_list
+								  LIMIT ${params.start}, ${params.limit}
+								RETURN {
+								  count: doc.count / ${stats.items.maxWeight},
+								  species_list: doc.species_list,
+								  ${X}: doc.properties[${X}],
+								  ${Y}: doc.properties[${Y}]
+								}
+							`
+						} else {
+							query = aql`
+								FOR doc IN ${collection}
+								  FILTER ${theSpecies} ALL IN doc.species_list
+								  LIMIT ${params.start}, ${params.limit}
+								RETURN {
+								  count: doc.count / ${stats.items.maxWeight},
+								  ${X}: doc.properties[${X}],
+								  ${Y}: doc.properties[${Y}]
+								}
+							`
+						}
+						break
+					
+					case 'array':
+						if(doSpecies)
+						{
+							query = aql`
+								FOR doc IN ${collection}
+								  FILTER ${theSpecies} ALL IN doc.species_list
+								  LIMIT ${params.start}, ${params.limit}
+								RETURN [
+								  doc.count / ${stats.items.maxWeight},
+								  species_list: doc.species_list,
+								  doc.properties[${X}],
+								  doc.properties[${Y}]
+								]
+							`
+						} else {
+							query = aql`
+								FOR doc IN ${collection}
+								  FILTER ${theSpecies} ALL IN doc.species_list
+								  LIMIT ${params.start}, ${params.limit}
+								RETURN [
+								  doc.count / ${stats.items.maxWeight},
+								  doc.properties[${X}],
+								  doc.properties[${Y}]
+								]
+							`
+						}
+						break
+				}
+				break
+			
+			case 'count':
+				switch(theFormat)
+				{
+					case 'json':
+						if (doSpecies)
+						{
+							query = aql`
+								FOR doc IN ${collection}
+								  FILTER ${theSpecies} ALL IN doc.species_list
+								  LIMIT ${params.start}, ${params.limit}
+								RETURN {
+								  count: doc.count,
+								  species_list: doc.species_list,
+								  ${X}: doc.properties[${X}],
+								  ${Y}: doc.properties[${Y}]
+								}
+							`
+						} else {
+							query = aql`
+								FOR doc IN ${collection}
+								  FILTER ${theSpecies} ALL IN doc.species_list
+								  LIMIT ${params.start}, ${params.limit}
+								RETURN {
+								  count: doc.count,
+								  ${X}: doc.properties[${X}],
+								  ${Y}: doc.properties[${Y}]
+								}
+							`
+						}
+						break
+					
+					case 'array':
+						if (doSpecies)
+						{
+							query = aql`
+								FOR doc IN ${collection}
+								  FILTER ${theSpecies} ALL IN doc.species_list
+								  LIMIT ${params.start}, ${params.limit}
+								RETURN []
+								  doc.count,
+								  species_list: doc.species_list,
+								  doc.properties[${X}],
+								  doc.properties[${Y}]
+								]
+							`
+						} else {
+							query = aql`
+								FOR doc IN ${collection}
+								  FILTER ${theSpecies} ALL IN doc.species_list
+								  LIMIT ${params.start}, ${params.limit}
+								RETURN []
+								  doc.count,
+								  doc.properties[${X}],
+								  doc.properties[${Y}]
+								]
+							`
+						}
+						break
+				}
+				break
+			
+			default:
+				throw new Error(`Requested a non existing count type: ${theCountType}.`)
+			
+		} // Handled count type.
+		
+	} else {
+		switch(theFormat)
+		{
+			case 'json':
+				if (doSpecies)
+				{
+					query = aql`
+						FOR doc IN ${collection}
+						  FILTER ${theSpecies} ALL IN doc.species_list
+						  LIMIT ${params.start}, ${params.limit}
+						RETURN {
+						  species_list: doc.species_list,
+						  ${X}: doc.properties[${X}],
+						  ${Y}: doc.properties[${Y}]
+						}
+					`
+				} else {
+					query = aql`
+						FOR doc IN ${collection}
+						  FILTER ${theSpecies} ALL IN doc.species_list
+						  LIMIT ${params.start}, ${params.limit}
+						RETURN {
+						  ${X}: doc.properties[${X}],
+						  ${Y}: doc.properties[${Y}]
+						}
+					`
+				}
+				break
+			
+			case 'array':
+				if (doSpecies)
+				{
+					query = aql`
+						FOR doc IN ${collection}
+						  FILTER ${theSpecies} ALL IN doc.species_list
+						  LIMIT ${params.start}, ${params.limit}
+						RETURN [
+						  species_list: doc.species_list,
+						  doc.properties[${X}],
+						  doc.properties[${Y}]
+						]
+					`
+				} else {
+					query = aql`
+						FOR doc IN ${collection}
+						  FILTER ${theSpecies} ALL IN doc.species_list
+						  LIMIT ${params.start}, ${params.limit}
+						RETURN [
+						  doc.properties[${X}],
+						  doc.properties[${Y}]
+						]
+					`
+				}
+				break
+		}
+	}
+	
+	return db._query(query).toArray()                                   // ==>
+	
+} // getSpeciesData()
 
 /**
  * getPairCollectionNames
@@ -456,7 +718,9 @@ function getPairCollectionNames(thePair = "all", theDomain = "all", theType = "a
 module.exports = {
 	getStats,
 	getPairInfos,
+	
 	getGridData,
+	getSpeciesData,
 	
 	getPairCollectionNames
 }

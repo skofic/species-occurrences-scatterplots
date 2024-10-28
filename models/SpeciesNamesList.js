@@ -13,5 +13,7 @@ module.exports = joi
 	.items(joi.string())
 	.required()
 	.description(dd`
-		List of species names.
+List of species names.
+
+The list of species to be selected by the query.
 	`)
