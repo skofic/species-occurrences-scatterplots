@@ -25,7 +25,6 @@ const ModelPairParameter = require('../models/CollectionPairParameter')
 const ModelTypeParameter = require('../models/CollectionTypeParameter')
 const ModelDomainParameter = require('../models/CollectionDomainParameter')
 const ModelStatisticsParameter = require('../models/StatisticsParameter')
-const ModelSpeciesNames = require('../models/SpeciesNamesList')
 const ModelsPairsInfos = require('../models/PairInfos')
 const ModelStatistics = require('../models/Statistics')
 

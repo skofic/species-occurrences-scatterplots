@@ -34,7 +34,7 @@ The keys are the pair keys, and the value is as follows:
       - \`stats\`: Statistics on the collection.
         - \`items\`: Information on the collection element count.
           - \`records\`: The number of records in the collection.
-          - \`maxElements\`: *The maximum number of original records in a record*.
+          - \`maxWeight\`: *The maximum number of original elements in a record*.
         - \`X\`: X-axis statistics.
           - \`term\`: The variable used for the X-axis.
           - \`count\`: The number of unique values for the X-axis.
@@ -50,9 +50,9 @@ The keys are the pair keys, and the value is as follows:
             - \`avg\`: Average value of the Y-axis.
             - \`max\`: Maximum value of the Y-axis.
 
-The \`maxElements\` property in the \`items\` section of the collection \
-refer to the largest number of original records associated with a record. \
-This is useful because each record of the collection contains a count \
+The \`maxWeight\` property in the \`items\` section of the collection \
+refers to the largest number of original records referenced by a value pair. \
+This is useful because each record of the collection contains a *count* \
 value that divided by \`maxElements\` gives a number ranging from 0 to 1: \
 this number represents a weight that can be used to create heatmaps.
 	`)

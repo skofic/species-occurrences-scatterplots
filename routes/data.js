@@ -26,6 +26,8 @@ const ModelTypeParameter = require('../models/DataTypeParameter')
 const ModelStartParameter = require('../models/StartParameter')
 const ModelLimitParameter = require('../models/LimitParameter')
 const ModelCountParameter = require('../models/IncludeCountParameter')
+const ModelUseWeightOrCount = require('../models/CountTypeParameter')
+const ModelResultFormat = require('../models/ResultFormatParameter')
 const ModelGridData = require('../models/GridData')
 
 ///
@@ -70,16 +72,17 @@ it is the base layer of the scatter-plot. This layer shows what is the \
 climate combination for the selected pair for the region of interest.
 
 Provide the pair key, to select the pair of indicators, and the type, \
-to select either the full resolution or rounded data for the grid.
-
-Provide the start and limit parameters to select the data range; \
-for full resolution data these parameters are required, for rounded \
-data these can be omitted and the full data set will be returned.
+to select either the full resolution or rounded data for the grid. \
+There are a set of flags that determine what data is returned and in \
+what format. Provide the start and limit parameters to select the \
+records range.
 	`)
 	
 	.queryParam('pair', ModelPairParameter)
 	.queryParam('type', ModelTypeParameter)
 	.queryParam('count', ModelCountParameter)
+	.queryParam('weight', ModelUseWeightOrCount)
+	.queryParam('format', ModelResultFormat)
 	.queryParam('start', ModelStartParameter)
 	.queryParam('limit', ModelLimitParameter)
 	
@@ -98,7 +101,10 @@ function getGrid(theRequest, theResponse)
 		theRequest.queryParams.pair,
 		theRequest.queryParams.type,
 		theRequest.queryParams.start,
-		theRequest.queryParams.limit
+		theRequest.queryParams.limit,
+		theRequest.queryParams.count,
+		theRequest.queryParams.weight,
+		theRequest.queryParams.format
 	)                                                                   // ==>
 	
 } // getStats()

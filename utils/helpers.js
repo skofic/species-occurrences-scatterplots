@@ -228,6 +228,8 @@ function getPairInfos(thePair = "all", theDomain = "all", theType = "all")
  * @param theStart {Number}: Records start.
  * @param theLimit {Number}: Records count.
  * @param doCount {Boolean}: Include count in results.
+ * @param theCountType {String}: Weight or record count.
+ * @param theFormat {String}: Result format.
  *
  * @return {Object}: Grid level records.
  */
@@ -236,7 +238,9 @@ function getGridData(
 	theType,
 	theStart,
 	theLimit,
-	doCount
+	doCount,
+	theCountType,
+	theFormat
 ) {
 	///
 	// Init local storage.
@@ -270,33 +274,109 @@ function getGridData(
 	///
 	// Get indicators and collection.
 	///
+	const name = `${params.pair}_chelsa_${params.type}`
 	const X = K.pairs[params.pair].X.term
 	const Y = K.pairs[params.pair].Y.term
-	const collection = db._collection(`${params.pair}_chelsa_${params.type}`)
+	const collection = db._collection(name)
 	
 	///
-	// Make query.
+	// Handle count.
 	///
-	const query = doCount
-		?
-			aql`
-				FOR doc IN ${collection}
-				  LIMIT ${params.start}, ${params.limit}
-				RETURN {
-				  count: doc.count,
-				  ${X}: doc.properties[${X}],
-				  ${Y}: doc.properties[${Y}]
+	let query = aql``
+	if(doCount)
+	{
+		switch(theCountType)
+		{
+			case 'weight':
+				const stats = db._collection('Stats').document(name)
+				switch(theFormat)
+				{
+					case 'json':
+						query = aql`
+							FOR doc IN ${collection}
+							  LIMIT ${params.start}, ${params.limit}
+							RETURN {
+							  count: doc.count / ${stats.items.maxWeight},
+							  ${X}: doc.properties[${X}],
+							  ${Y}: doc.properties[${Y}]
+							}
+						`
+						break
+					
+					case 'array':
+						query = aql`
+							FOR doc IN ${collection}
+							  LIMIT ${params.start}, ${params.limit}
+							RETURN [
+							  doc.count / ${stats.items.maxWeight},
+							  doc.properties[${X}],
+							  doc.properties[${Y}]
+							]
+						`
+						break
 				}
-			`
-		:
-			aql`
-				FOR doc IN ${collection}
-				  LIMIT ${params.start}, ${params.limit}
-				RETURN {
-				  ${X}: doc.properties[${X}],
-				  ${Y}: doc.properties[${Y}]
+				break
+			
+			case 'count':
+				switch(theFormat)
+				{
+					case 'json':
+						query = aql`
+							FOR doc IN ${collection}
+							  LIMIT ${params.start}, ${params.limit}
+							RETURN {
+							  count: doc.count,
+							  ${X}: doc.properties[${X}],
+							  ${Y}: doc.properties[${Y}]
+							}
+						`
+						break
+					
+					case 'array':
+						query = aql`
+							FOR doc IN ${collection}
+							  LIMIT ${params.start}, ${params.limit}
+							RETURN []
+							  doc.count,
+							  doc.properties[${X}],
+							  doc.properties[${Y}]
+							]
+						`
+						break
 				}
-			`
+				break
+			
+			default:
+				throw new Error(`Requested a non existing count type: ${theCountType}.`)
+		
+		} // Handled count type.
+
+	} else {
+		switch(theFormat)
+		{
+			case 'json':
+				query = aql`
+					FOR doc IN ${collection}
+					  LIMIT ${params.start}, ${params.limit}
+					RETURN {
+					  ${X}: doc.properties[${X}],
+					  ${Y}: doc.properties[${Y}]
+					}
+				`
+				break
+			
+			case 'array':
+				query = aql`
+					FOR doc IN ${collection}
+					  LIMIT ${params.start}, ${params.limit}
+					RETURN [
+					  doc.properties[${X}],
+					  doc.properties[${Y}]
+					]
+				`
+				break
+		}
+	}
 	
 	return db._query(query).toArray()                                   // ==>
 	

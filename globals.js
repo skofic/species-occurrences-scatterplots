@@ -15,7 +15,7 @@ module.exports = Object.freeze({
 	// Collection types.
 	///
 	types: {
-		list: [ 'full', 'round' ]
+		list: [ 'full', 'med', 'low' ]
 	},
 	
 	///
@@ -50,8 +50,19 @@ module.exports = Object.freeze({
 					}
 				},
 				
-				// Rounded data.
-				round: {
+				// Medium resolution data.
+				med: {
+					// Indexes.
+					indexes: {
+						// Indexed fields.
+						fields: [],
+						// Index indicator values.
+						indicators: false
+					}
+				},
+				
+				// Low resolution data.
+				low: {
 					// Indexes.
 					indexes: {
 						// Indexed fields.
@@ -94,8 +105,24 @@ module.exports = Object.freeze({
 					}
 				},
 				
-				// Rounded data.
-				round: {
+				// Medium resolution data.
+				med: {
+					// Indexes.
+					indexes: {
+						// Indexed fields.
+						fields: [
+							{
+								name: 'species_list',
+								fields: ["species_list[*]"]
+							}
+						],
+						// Index indicator values.
+						indicators: false
+					}
+				},
+				
+				// Low resolution data.
+				low: {
 					// Indexes.
 					indexes: {
 						// Indexed fields.
@@ -147,8 +174,28 @@ module.exports = Object.freeze({
 					}
 				},
 				
-				// Rounded data.
-				round: {
+				// Medium resolution data.
+				med: {
+					// Indexes.
+					indexes: {
+						// Indexed fields.
+						fields: [
+							{
+								name: 'gcu_id_number_list',
+								fields: ["gcu_id_number_list[*]"]
+							},
+							{
+								name: 'gcu_id_unit-id_list',
+								fields: ["gcu_id_unit-id_list[*]"]
+							}
+						],
+						// Index indicator values.
+						indicators: false
+					}
+				},
+				
+				// Low resolution data.
+				low: {
 					// Indexes.
 					indexes: {
 						// Indexed fields.
@@ -583,6 +630,17 @@ module.exports = Object.freeze({
 			}
 		}
 	
-	} // Indicator pairs.
+	},  // Indicator pairs.
+	
+	constants: {
+		countType: [
+			'count',    // Record count.
+			'weight'    // Percentage weight.
+		],
+		resultFormats: [
+			'json',     // Each record is a JSON structure.
+			'array'     // Each record is an array of values.
+		]
+	}
 	
 })

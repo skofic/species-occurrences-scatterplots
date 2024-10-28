@@ -19,6 +19,7 @@ module.exports = joi
 		Collection type.
 		The collection type indicates the resolution of the data, valid options are:
 		- \`full\`: Full resolution data.
-		- \`round\`: Rounded data.
+		- \`med\`: Medium resolution data.
+		- \`low\`: Low resolution data.
 		- \`all\`: All types.
 	`)
