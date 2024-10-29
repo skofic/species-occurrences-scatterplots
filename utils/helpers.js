@@ -564,7 +564,7 @@ function getUnitsData(
 	// Init local storage.
 	///
 	const params = {}
-	
+
 	///
 	// Handle pair.
 	///
@@ -573,7 +573,7 @@ function getUnitsData(
 	} else {
 		throw new Error(`Requested a non existing pair key: ${thePair}.`)
 	}
-	
+
 	///
 	// Handle type.
 	///
@@ -582,231 +582,141 @@ function getUnitsData(
 	} else {
 		throw new Error(`Requested a non existing type key: ${theType}.`)
 	}
-	
+
 	///
 	// Handle limits.
 	///
 	params['start'] = theStart
 	params['limit'] = theLimit
-	
+
 	///
 	// Get indicators and collection.
 	///
-	const name = `${params.pair}_eu_${params.type}`
+	const name = `${params.pair}_eufgis_${params.type}`
 	const X = K.pairs[params.pair].X.term
 	const Y = K.pairs[params.pair].Y.term
 	const collection = db._collection(name)
-	
+
 	///
-	// Get units selection.
-	// TODO: Here, and in the species service, we need to create
-	// query components to be assembled, or it will become a gigantic if-else.
+	// Init query components.
 	///
-	let unit_id_query = aql``
-	let unit_number_query = aql``
-	if(theUnits.hasOwnProperty('gcu_id_number_list')) {
-		if(doId) {
-			if(theUnits['gcu_id_number_list'].length > 0) {
-				unit_id_query = aql`FILTER doc['gcu_id_unit-id_list'] ALL IN ${theUnits['gcu_id_unit-id_list']}`
-			}
-		}
-		if(doNumber) {
-			if(theUnits['gcu_id_unit-id_list'].length > 0) {
-				unit_number_query = aql`FILTER doc['gcu_id_number_list'] ALL IN ${theUnits['gcu_id_number_list']}`
-			}
-		}
-	}
+	let query_id = aql``
+	let query_id_data = aql``
+	let query_number = aql``
+	let query_number_data = aql``
+	let query_count = aql``
+	let query_vars = aql``
 	
 	///
 	// Handle count.
 	///
-	let query = aql``
-	if(doCount)
-	{
-		switch(theCountType)
-		{
+	if(doCount) {
+		switch(theCountType) {
 			case 'weight':
 				const stats = db._collection('Stats').document(name)
-				switch(theFormat)
-				{
+				switch(theFormat) {
 					case 'json':
-						if(doSpecies) {
-							query = aql`
-								FOR doc IN ${collection}
-								  FILTER ${theSpecies} ALL IN doc.species_list
-								  LIMIT ${params.start}, ${params.limit}
-								RETURN {
-								  count: doc.count / ${stats.items.maxWeight},
-								  species_list: doc.species_list,
-								  ${X}: doc.properties[${X}],
-								  ${Y}: doc.properties[${Y}]
-								}
-							`
-						} else {
-							query = aql`
-								FOR doc IN ${collection}
-								  FILTER ${theSpecies} ALL IN doc.species_list
-								  LIMIT ${params.start}, ${params.limit}
-								RETURN {
-								  count: doc.count / ${stats.items.maxWeight},
-								  ${X}: doc.properties[${X}],
-								  ${Y}: doc.properties[${Y}]
-								}
-							`
-						}
+						query_count = aql`count: doc.count / ${stats.items.maxWeight},`
 						break
-					
 					case 'array':
-						if(doSpecies)
-						{
-							query = aql`
-								FOR doc IN ${collection}
-								  FILTER ${theSpecies} ALL IN doc.species_list
-								  LIMIT ${params.start}, ${params.limit}
-								RETURN [
-								  doc.count / ${stats.items.maxWeight},
-								  species_list: doc.species_list,
-								  doc.properties[${X}],
-								  doc.properties[${Y}]
-								]
-							`
-						} else {
-							query = aql`
-								FOR doc IN ${collection}
-								  FILTER ${theSpecies} ALL IN doc.species_list
-								  LIMIT ${params.start}, ${params.limit}
-								RETURN [
-								  doc.count / ${stats.items.maxWeight},
-								  doc.properties[${X}],
-								  doc.properties[${Y}]
-								]
-							`
-						}
+						query_count = aql`doc.count / ${stats.items.maxWeight},`
 						break
 				}
 				break
-			
 			case 'count':
-				switch(theFormat)
-				{
+				switch(theFormat) {
 					case 'json':
-						if (doSpecies)
-						{
-							query = aql`
-								FOR doc IN ${collection}
-								  FILTER ${theSpecies} ALL IN doc.species_list
-								  LIMIT ${params.start}, ${params.limit}
-								RETURN {
-								  count: doc.count,
-								  species_list: doc.species_list,
-								  ${X}: doc.properties[${X}],
-								  ${Y}: doc.properties[${Y}]
-								}
-							`
-						} else {
-							query = aql`
-								FOR doc IN ${collection}
-								  FILTER ${theSpecies} ALL IN doc.species_list
-								  LIMIT ${params.start}, ${params.limit}
-								RETURN {
-								  count: doc.count,
-								  ${X}: doc.properties[${X}],
-								  ${Y}: doc.properties[${Y}]
-								}
-							`
-						}
+						query_count = aql`count: doc.count,`
 						break
-					
 					case 'array':
-						if (doSpecies)
-						{
-							query = aql`
-								FOR doc IN ${collection}
-								  FILTER ${theSpecies} ALL IN doc.species_list
-								  LIMIT ${params.start}, ${params.limit}
-								RETURN []
-								  doc.count,
-								  species_list: doc.species_list,
-								  doc.properties[${X}],
-								  doc.properties[${Y}]
-								]
-							`
-						} else {
-							query = aql`
-								FOR doc IN ${collection}
-								  FILTER ${theSpecies} ALL IN doc.species_list
-								  LIMIT ${params.start}, ${params.limit}
-								RETURN []
-								  doc.count,
-								  doc.properties[${X}],
-								  doc.properties[${Y}]
-								]
-							`
-						}
+						query_count = aql`doc.count,`
 						break
-				}
-				break
-			
-			default:
-				throw new Error(`Requested a non existing count type: ${theCountType}.`)
-			
-		} // Handled count type.
-		
-	} else {
-		switch(theFormat)
-		{
-			case 'json':
-				if (doSpecies)
-				{
-					query = aql`
-						FOR doc IN ${collection}
-						  FILTER ${theSpecies} ALL IN doc.species_list
-						  LIMIT ${params.start}, ${params.limit}
-						RETURN {
-						  species_list: doc.species_list,
-						  ${X}: doc.properties[${X}],
-						  ${Y}: doc.properties[${Y}]
-						}
-					`
-				} else {
-					query = aql`
-						FOR doc IN ${collection}
-						  FILTER ${theSpecies} ALL IN doc.species_list
-						  LIMIT ${params.start}, ${params.limit}
-						RETURN {
-						  ${X}: doc.properties[${X}],
-						  ${Y}: doc.properties[${Y}]
-						}
-					`
-				}
-				break
-			
-			case 'array':
-				if (doSpecies)
-				{
-					query = aql`
-						FOR doc IN ${collection}
-						  FILTER ${theSpecies} ALL IN doc.species_list
-						  LIMIT ${params.start}, ${params.limit}
-						RETURN [
-						  species_list: doc.species_list,
-						  doc.properties[${X}],
-						  doc.properties[${Y}]
-						]
-					`
-				} else {
-					query = aql`
-						FOR doc IN ${collection}
-						  FILTER ${theSpecies} ALL IN doc.species_list
-						  LIMIT ${params.start}, ${params.limit}
-						RETURN [
-						  doc.properties[${X}],
-						  doc.properties[${Y}]
-						]
-					`
 				}
 				break
 		}
+	}
+	
+	///
+	// Handle units query.
+	///
+	if(theUnits.hasOwnProperty('gcu_id_number_list')) {
+		query_number = aql`FILTER doc['gcu_id_number_list'] ALL IN ${theUnits['gcu_id_number_list']}`
+	}
+	if(theUnits.hasOwnProperty('gcu_id_unit-id_list')) {
+		query_id = aql`FILTER doc['gcu_id_unit-id_list'] ALL IN ${theUnits['gcu_id_unit-id_list']}`
+	}
+	
+	///
+	// Handle units data.
+	///
+	if(doId) {
+		switch(theFormat) {
+			case 'json':
+				query_id_data = aql`'gcu_id_unit-id_list': doc['gcu_id_unit-id_list'],`
+				break
+		}
+	}
+	if(doNumber) {
+		switch(theFormat) {
+			case 'json':
+				query_number_data = aql`gcu_id_number_list: doc['gcu_id_number_list'],`
+				break
+		}
+	}
+	
+	///
+	// Handle indicators.
+	///
+	switch(theFormat)
+	{
+		case 'json':
+			query_vars = aql`
+					${X}: doc.properties[${X}],
+					${Y}: doc.properties[${Y}]
+				`
+			break
+		
+		case 'array':
+			query_vars = aql`
+					doc.properties[${X}],
+					doc.properties[${Y}]
+				`
+			break
+	}
+	
+	///
+	// Handle query.
+	///
+	let query = aql``
+	switch(theFormat) {
+		case 'json':
+			query = aql`
+				FOR doc IN ${collection}
+				  ${query_id}
+				  ${query_number}
+				  LIMIT ${params.start}, ${params.limit}
+				RETURN {
+				  ${query_count}
+				  ${query_id_data}
+				  ${query_number_data}
+				  ${query_vars}
+				}
+			`
+			break
+		case 'array':
+			query = aql`
+				FOR doc IN ${collection}
+				  ${query_id}
+				  ${query_number}
+				  LIMIT ${params.start}, ${params.limit}
+				RETURN [
+				  ${query_count}
+				  ${query_id_data}
+				  ${query_number_data}
+				  ${query_vars}
+				]
+			`
+			break
 	}
 	
 	return db._query(query).toArray()                                   // ==>

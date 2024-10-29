@@ -219,7 +219,7 @@ function getSpecies(theRequest, theResponse)
  */
 function getUnits(theRequest, theResponse)
 {
-	return helpers.getSpeciesData(
+	return helpers.getUnitsData(
 		theRequest.queryParams.pair,
 		theRequest.queryParams.type,
 		theRequest.body,
@@ -232,4 +232,4 @@ function getUnits(theRequest, theResponse)
 		theRequest.queryParams.limit
 	)                                                                   // ==>
 	
-} // getSpecies()
+} // getUnits()

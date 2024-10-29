@@ -63,7 +63,20 @@ router
 	)
 	.summary('Get statistics')
 	.description(dd`
-		Get statistics on indicator values and domains.
+Get statistics on indicator values and domains.
+
+This service will return one record per domain, Chelsa, EU-Forest and EUFGIS, \
+or the list of species represented in thew species layer data.
+
+The domain data is a property named after the domain that contains an object \
+featuring one property for each featured indicator. This object contains the \
+minimum, average and maximum value for that indicator.
+
+The species information is a property named *Species* containing an array of \
+species names.
+
+*The indicator names follow standards defined in the \
+[EUFGIS data dictionary](https://github.com/skofic/data-dictionary-service).*
 	`)
 	
 	.queryParam('domain', ModelStatisticsParameter)
@@ -81,9 +94,12 @@ router
 		},
 		'pairs'
 	)
-	.summary('Get pair collection names')
+	.summary('Get pair information')
 	.description(dd`
-		Get pair information according to provided pair key, domain and type.
+Get pair information according to provided pair key, domain and type.
+
+Use this service to get information and statistics on the indicator pairs \
+featured by the database.
 	`)
 	
 	.queryParam('pair', ModelPairParameter)
