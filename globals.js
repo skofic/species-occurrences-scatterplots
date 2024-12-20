@@ -57,7 +57,7 @@ module.exports = Object.freeze({
 						// Indexed fields.
 						fields: [],
 						// Index indicator values.
-						indicators: false
+						indicators: true
 					}
 				},
 				
@@ -68,7 +68,7 @@ module.exports = Object.freeze({
 						// Indexed fields.
 						fields: [],
 						// Index indicator values.
-						indicators: false
+						indicators: true
 					}
 				}
 			}
@@ -117,7 +117,7 @@ module.exports = Object.freeze({
 							}
 						],
 						// Index indicator values.
-						indicators: false
+						indicators: true
 					}
 				},
 				
@@ -133,7 +133,7 @@ module.exports = Object.freeze({
 							}
 						],
 						// Index indicator values.
-						indicators: false
+						indicators: true
 					}
 				}
 			}
@@ -190,7 +190,7 @@ module.exports = Object.freeze({
 							}
 						],
 						// Index indicator values.
-						indicators: false
+						indicators: true
 					}
 				},
 				
@@ -210,7 +210,7 @@ module.exports = Object.freeze({
 							}
 						],
 						// Index indicator values.
-						indicators: false
+						indicators: true
 					}
 				}
 			}
