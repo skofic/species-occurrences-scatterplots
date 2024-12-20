@@ -10,7 +10,9 @@
     "main": "main.js",
     "scripts": {
         "setup": "scripts/setup.js",
+        "workshop": "scripts/workshop.js",
         "teardown": "scripts/teardown.js"
     },
-    "tests": "test/**/*.js"
+    "tests": "test/**/*.js",
+    "$schema": "http://json.schemastore.org/foxx-manifest"
 }
