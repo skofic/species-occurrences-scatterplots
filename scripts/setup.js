@@ -16,8 +16,8 @@ const K = require("../globals")
 // Indexes.
 ///
 const idx_fields = {
-	idx_units: ["properties.eu.species_list[*]"],
-	idx_species: ["properties.eu.species_list[*]"]
+	idx_species: ["properties.eu.species_list[*]"],
+	idx_units: ["properties.eufgis.gcu_id_number_list[*]"]
 }
 
 ///
