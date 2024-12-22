@@ -10,10 +10,12 @@ const dd = require('dedent')
  */
 module.exports = joi
 	.array()
-	.items(joi.string())
+	.items(joi.string().required())
+	.min(1)
 	.required()
 	.description(dd`
 List of species names.
 
 The list of species to be selected by the query.
+At least one species must be provided.
 	`)

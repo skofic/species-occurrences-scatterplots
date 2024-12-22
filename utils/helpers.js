@@ -226,7 +226,6 @@ function getPairInfos(thePair = "all", theDomain = "all", theType = "all")
  * @param thePair {String}: Pair key.
  * @param theType {String}: Which resolution.
  * @param doCount {Boolean}: Include count in results.
- * @param theCountType {String}: Weight or record count.
  * @param theFormat {String}: Result format.
  * @param theStart {Number}: Records start.
  * @param theLimit {Number}: Records count.
@@ -237,7 +236,6 @@ function getGridData(
 	thePair,
 	theType,
 	doCount,
-	theCountType,
 	theFormat,
 	theStart,
 	theLimit
@@ -274,7 +272,7 @@ function getGridData(
 	///
 	// Get indicators and collection.
 	///
-	const name = `${params.pair}_chelsa_${params.type}`
+	const name = `${params.pair}_${params.type}`
 	const X = K.pairs[params.pair].X.term
 	const Y = K.pairs[params.pair].Y.term
 	const collection = db._collection(name)
@@ -286,30 +284,15 @@ function getGridData(
 	let query_vars = aql``
 	
 	///
-	// Handle count.
+	// Handle result format.
 	///
 	if(doCount) {
-		switch(theCountType) {
-			case 'weight':
-				const stats = db._collection('Stats').document(name)
-				switch(theFormat) {
-					case 'json':
-						query_count = aql`count: doc.count / ${stats.items.maxWeight},`
-						break
-					case 'array':
-						query_count = aql`doc.count / ${stats.items.maxWeight},`
-						break
-				}
+		switch(theFormat) {
+			case 'json':
+				query_count = aql`count: doc.properties.chelsa.count,`
 				break
-			case 'count':
-				switch(theFormat) {
-					case 'json':
-						query_count = aql`count: doc.count,`
-						break
-					case 'array':
-						query_count = aql`doc.count,`
-						break
-				}
+			case 'array':
+				query_count = aql`doc.properties.chelsa.count,`
 				break
 		}
 	}
@@ -320,14 +303,14 @@ function getGridData(
 	switch(theFormat) {
 		case 'json':
 			query_vars = aql`
-				${X}: doc.properties[${X}],
-				${Y}: doc.properties[${Y}]
+				${X}: doc[${X}],
+				${Y}: doc[${Y}]
 			`
 			break
 		case 'array':
 			query_vars = aql`
-				doc.properties[${X}],
-				doc.properties[${Y}]
+				doc[${X}],
+				doc[${Y}]
 			`
 			break
 	}
@@ -374,7 +357,6 @@ function getGridData(
  * @param theSpecies {String[]}: Requested species list.
  * @param doCount {Boolean}: Include count in results.
  * @param doSpecies {Boolean}: Include species in results.
- * @param theCountType {String}: Weight or record count.
  * @param theFormat {String}: Result format.
  * @param theStart {Number}: Records start.
  * @param theLimit {Number}: Records count.
@@ -387,7 +369,6 @@ function getSpeciesData(
 	theSpecies,
 	doCount,
 	doSpecies,
-	theCountType,
 	theFormat,
 	theStart,
 	theLimit
@@ -424,7 +405,7 @@ function getSpeciesData(
 	///
 	// Get indicators and collection.
 	///
-	const name = `${params.pair}_eu_${params.type}`
+	const name = `${params.pair}_${params.type}`
 	const X = K.pairs[params.pair].X.term
 	const Y = K.pairs[params.pair].Y.term
 	const collection = db._collection(name)
@@ -440,27 +421,12 @@ function getSpeciesData(
 	// Handle count.
 	///
 	if(doCount) {
-		switch(theCountType) {
-			case 'weight':
-				const stats = db._collection('Stats').document(name)
-				switch(theFormat) {
-					case 'json':
-						query_count = aql`count: doc.count / ${stats.items.maxWeight},`
-						break
-					case 'array':
-						query_count = aql`doc.count / ${stats.items.maxWeight},`
-						break
-				}
+		switch(theFormat) {
+			case 'json':
+				query_count = aql`count: doc.properties.eu.count,`
 				break
-			case 'count':
-				switch(theFormat) {
-					case 'json':
-						query_count = aql`count: doc.count,`
-						break
-					case 'array':
-						query_count = aql`doc.count,`
-						break
-				}
+			case 'array':
+				query_count = aql`doc.properties.eu.count,`
 				break
 		}
 	}
@@ -471,7 +437,7 @@ function getSpeciesData(
 	if(doSpecies) {
 		switch(theFormat) {
 			case 'json':
-				query_species = aql`species_list: doc.species_list,`
+				query_species = aql`species_list: doc.properties.eu.species_list,`
 				break
 		}
 	}
@@ -482,14 +448,14 @@ function getSpeciesData(
 	switch(theFormat) {
 		case 'json':
 			query_vars = aql`
-				${X}: doc.properties[${X}],
-				${Y}: doc.properties[${Y}]
+				${X}: doc[${X}],
+				${Y}: doc[${Y}]
 			`
 			break
 		case 'array':
 			query_vars = aql`
-				doc.properties[${X}],
-				doc.properties[${Y}]
+				doc[${X}],
+				doc[${Y}]
 			`
 			break
 	}
@@ -502,7 +468,7 @@ function getSpeciesData(
 		case 'json':
 			query = aql`
 				FOR doc IN ${collection}
-				  FILTER ${theSpecies} ALL IN doc.species_list
+				  FILTER ${theSpecies} ALL IN doc.properties.eu.species_list
 				  LIMIT ${params.start}, ${params.limit}
 				RETURN {
 				  ${query_count}
@@ -514,7 +480,7 @@ function getSpeciesData(
 		case 'array':
 			query = aql`
 				FOR doc IN ${collection}
-				  FILTER ${theSpecies} ALL IN doc.species_list
+				  FILTER ${theSpecies} ALL IN doc.properties.eu.species_list
 				  LIMIT ${params.start}, ${params.limit}
 				RETURN [
 				  ${query_count}
@@ -537,11 +503,9 @@ function getSpeciesData(
  *
  * @param thePair {String}: Pair key.
  * @param theType {String}: Which resolution.
- * @param theUnits {Object}: Requested units list.
+ * @param theUnits {Array}: Requested units list.
  * @param doCount {Boolean}: Include count in results.
- * @param doId {Boolean}: Include unit IDs in results.
  * @param doNumber {Boolean}: Include unit numbers in results.
- * @param theCountType {String}: Weight or record count.
  * @param theFormat {String}: Result format.
  * @param theStart {Number}: Records start.
  * @param theLimit {Number}: Records count.
@@ -553,9 +517,7 @@ function getUnitsData(
 	theType,
 	theUnits,
 	doCount,
-	doId,
 	doNumber,
-	theCountType,
 	theFormat,
 	theStart,
 	theLimit
@@ -592,7 +554,7 @@ function getUnitsData(
 	///
 	// Get indicators and collection.
 	///
-	const name = `${params.pair}_eufgis_${params.type}`
+	const name = `${params.pair}_${params.type}`
 	const X = K.pairs[params.pair].X.term
 	const Y = K.pairs[params.pair].Y.term
 	const collection = db._collection(name)
@@ -600,8 +562,6 @@ function getUnitsData(
 	///
 	// Init query components.
 	///
-	let query_id = aql``
-	let query_id_data = aql``
 	let query_number = aql``
 	let query_number_data = aql``
 	let query_count = aql``
@@ -611,27 +571,12 @@ function getUnitsData(
 	// Handle count.
 	///
 	if(doCount) {
-		switch(theCountType) {
-			case 'weight':
-				const stats = db._collection('Stats').document(name)
-				switch(theFormat) {
-					case 'json':
-						query_count = aql`count: doc.count / ${stats.items.maxWeight},`
-						break
-					case 'array':
-						query_count = aql`doc.count / ${stats.items.maxWeight},`
-						break
-				}
+		switch(theFormat) {
+			case 'json':
+				query_count = aql`count: doc.properties.eufgis.count,`
 				break
-			case 'count':
-				switch(theFormat) {
-					case 'json':
-						query_count = aql`count: doc.count,`
-						break
-					case 'array':
-						query_count = aql`doc.count,`
-						break
-				}
+			case 'array':
+				query_count = aql`doc.properties.eufgis.count,`
 				break
 		}
 	}
@@ -639,27 +584,15 @@ function getUnitsData(
 	///
 	// Handle units query.
 	///
-	if(theUnits.hasOwnProperty('gcu_id_number_list')) {
-		query_number = aql`FILTER doc['gcu_id_number_list'] ALL IN ${theUnits['gcu_id_number_list']}`
-	}
-	if(theUnits.hasOwnProperty('gcu_id_unit-id_list')) {
-		query_id = aql`FILTER doc['gcu_id_unit-id_list'] ALL IN ${theUnits['gcu_id_unit-id_list']}`
-	}
+	query_number = aql`FILTER doc.properties.eufgis.gcu_id_number_list ALL IN ${theUnits}`
 	
 	///
 	// Handle units data.
 	///
-	if(doId) {
-		switch(theFormat) {
-			case 'json':
-				query_id_data = aql`'gcu_id_unit-id_list': doc['gcu_id_unit-id_list'],`
-				break
-		}
-	}
 	if(doNumber) {
 		switch(theFormat) {
 			case 'json':
-				query_number_data = aql`gcu_id_number_list: doc['gcu_id_number_list'],`
+				query_number_data = aql`gcu_id_number_list: doc.properties.eufgis.gcu_id_number_list,`
 				break
 		}
 	}
@@ -671,15 +604,15 @@ function getUnitsData(
 	{
 		case 'json':
 			query_vars = aql`
-					${X}: doc.properties[${X}],
-					${Y}: doc.properties[${Y}]
+					${X}: doc[${X}],
+					${Y}: doc[${Y}]
 				`
 			break
 		
 		case 'array':
 			query_vars = aql`
-					doc.properties[${X}],
-					doc.properties[${Y}]
+					doc[${X}],
+					doc[${Y}]
 				`
 			break
 	}
@@ -692,12 +625,10 @@ function getUnitsData(
 		case 'json':
 			query = aql`
 				FOR doc IN ${collection}
-				  ${query_id}
 				  ${query_number}
 				  LIMIT ${params.start}, ${params.limit}
 				RETURN {
 				  ${query_count}
-				  ${query_id_data}
 				  ${query_number_data}
 				  ${query_vars}
 				}
@@ -706,12 +637,10 @@ function getUnitsData(
 		case 'array':
 			query = aql`
 				FOR doc IN ${collection}
-				  ${query_id}
 				  ${query_number}
 				  LIMIT ${params.start}, ${params.limit}
 				RETURN [
 				  ${query_count}
-				  ${query_id_data}
 				  ${query_number_data}
 				  ${query_vars}
 				]

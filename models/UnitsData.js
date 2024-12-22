@@ -13,7 +13,6 @@ const dd = require('dedent')
 const objectSchema = joi.object({
 	count: joi.number().optional(),
 	gcu_id_number_list: joi.array().items(joi.string()).optional(),
-	'gcu_id_unit-id_list': joi.array().items(joi.string()).optional()
 	// Using joi.number() for any two additional numeric properties
 }).pattern(joi.string(), joi.number()).length(4);
 
@@ -37,7 +36,6 @@ top layer above the species layer. The structure is as follows:
 
 - \`count\`: The number of grid elements that feature the current pair of values.
 - \`gcu_id_number_list\`: The list of unit numbers featured by the current pair of values.
-- \`gcu_id_unit-id_list\`: The list of unit Ids featured by the current pair of values.
 - \`[X]\`: The value of the X-axis indicator, the property name will be the variable name.
 - \`[Y]\`: The value of the Y-axis indicator, the property name will be the variable name.
 

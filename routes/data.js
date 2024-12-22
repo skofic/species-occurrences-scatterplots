@@ -22,7 +22,7 @@ const HTTP_CONFLICT = status('conflict')
 // Models.
 ///
 const ModelPairParameter = require('../models/DataPairParameter')
-const ModelTypeParameter = require('../models/DataTypeParameter')
+const ModelResolutionParameter = require('../models/DataResolutionParameter')
 const ModelStartParameter = require('../models/StartParameter')
 const ModelLimitParameter = require('../models/LimitParameter')
 const ModelCountParameter = require('../models/IncludeCountParameter')
@@ -86,9 +86,8 @@ records range.
 	`)
 	
 	.queryParam('pair', ModelPairParameter)
-	.queryParam('type', ModelTypeParameter)
+	.queryParam('type', ModelResolutionParameter)
 	.queryParam('count', ModelCountParameter)
-	.queryParam('weight', ModelUseWeightOrCount)
 	.queryParam('format', ModelResultFormat)
 	.queryParam('start', ModelStartParameter)
 	.queryParam('limit', ModelLimitParameter)
@@ -122,10 +121,9 @@ records range.
 	`)
 	
 	.queryParam('pair', ModelPairParameter)
-	.queryParam('type', ModelTypeParameter)
+	.queryParam('type', ModelResolutionParameter)
 	.queryParam('count', ModelCountParameter)
 	.queryParam('species', ModelSpeciesParameter)
-	.queryParam('weight', ModelUseWeightOrCount)
 	.queryParam('format', ModelResultFormat)
 	.queryParam('start', ModelStartParameter)
 	.queryParam('limit', ModelLimitParameter)
@@ -161,11 +159,9 @@ records range.
 	`)
 	
 	.queryParam('pair', ModelPairParameter)
-	.queryParam('type', ModelTypeParameter)
+	.queryParam('type', ModelResolutionParameter)
 	.queryParam('count', ModelCountParameter)
-	.queryParam('id', ModelUnitIdParameter)
 	.queryParam('number', ModelUnitNumberParameter)
-	.queryParam('weight', ModelUseWeightOrCount)
 	.queryParam('format', ModelResultFormat)
 	.queryParam('start', ModelStartParameter)
 	.queryParam('limit', ModelLimitParameter)
@@ -187,7 +183,6 @@ function getGrid(theRequest, theResponse)
 		theRequest.queryParams.pair,
 		theRequest.queryParams.type,
 		theRequest.queryParams.count,
-		theRequest.queryParams.weight,
 		theRequest.queryParams.format,
 		theRequest.queryParams.start,
 		theRequest.queryParams.limit
@@ -206,7 +201,6 @@ function getSpecies(theRequest, theResponse)
 		theRequest.body,
 		theRequest.queryParams.count,
 		theRequest.queryParams.species,
-		theRequest.queryParams.weight,
 		theRequest.queryParams.format,
 		theRequest.queryParams.start,
 		theRequest.queryParams.limit
@@ -224,9 +218,7 @@ function getUnits(theRequest, theResponse)
 		theRequest.queryParams.type,
 		theRequest.body,
 		theRequest.queryParams.count,
-		theRequest.queryParams.id,
 		theRequest.queryParams.number,
-		theRequest.queryParams.weight,
 		theRequest.queryParams.format,
 		theRequest.queryParams.start,
 		theRequest.queryParams.limit

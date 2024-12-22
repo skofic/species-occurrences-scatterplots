@@ -6,7 +6,7 @@ const dd = require('dedent')
 const K = require("../globals.js")
 
 /**
- * DataTypeParameter.js
+ * DataResolutionParameter.js
  *
  * Model for collection type key.
  */
@@ -15,9 +15,9 @@ module.exports = joi
 	.valid(...K.types.list)
 	.required()
 	.description(dd`
-**Data type**.
+**Data resolution**.
 
-The Data type indicates the resolution of the data, valid options are:
+This parameter indicates the resolution of the data, valid options are:
 
 - \`full\`: Full resolution data.
 - \`med\`: Medium resolution data.
